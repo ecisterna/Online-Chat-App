@@ -1,0 +1,41 @@
+{% extends 'base.html' %} {% block content %}
+<div class="form">
+  <form method="post" class="buttons">
+    <div class="title">Enter the Chat Room</div>
+    <div class="input-container ic1">
+      <input
+        id="user-name"
+        type="text"
+        name="name"
+        value="{{name}}"
+        class="input"
+        placeholder=" "
+      />
+      <div class="cut"></div>
+      <label for="user-name" class="placeholder">Enter your name</label>
+    </div>
+    <button type="submit" name="create" class="submit">
+      Create a Room
+    </button>
+
+    <div class="input-container ic2">
+      <input
+        id="room-code"
+        type="text"
+        name="code"
+        value="{{code}}"
+        class="input"
+        placeholder=" "
+      />
+      <div class="cut"></div>
+      <label for="room-code" class="placeholder">Enter room code</label>
+    </div>
+    <button type="submit" name="join" class="submit">Join a Room</button>
+    {% if error %}
+    <ul>
+      <li>{{error}}</li>
+    </ul>
+    {% endif %}
+  </form>
+</div>
+{% endblock%}
