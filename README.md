@@ -1,5 +1,5 @@
 # Online-Chat-App
-Online Chat App made with Flask, Flask Socket IO and some JavaScript. This app allows you to chat in private rooms with your friends!
+Online Chat App made with Flask, Flask Socket IO and JavaScript. This app allows you to chat in private rooms with your friends!
 
 ## Features
 - You can chat in real time with the people in the room
