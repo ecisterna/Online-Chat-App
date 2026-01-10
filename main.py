@@ -5,13 +5,14 @@ from datetime import datetime
 import pytz
 import random
 from string import ascii_uppercase
+import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'riverplate'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///chat-app.db'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'riverplate')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///chat-app.db')
 app.config['TIMEZONE'] = pytz.utc
 db = SQLAlchemy(app)
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 rooms = {}
 
