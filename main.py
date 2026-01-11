@@ -9,7 +9,14 @@ import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'riverplate')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///chat-app.db')
+
+# Fix para PostgreSQL URL (Railway usa postgres:// pero SQLAlchemy 1.4+ requiere postgresql://)
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///chat-app.db')
+if database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['TIMEZONE'] = pytz.utc
 db = SQLAlchemy(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -64,12 +71,17 @@ def home():
         session['room'] = room
         session['name'] = name
         
-        user = User.query.filter_by(name=name).first()
-        if not user:
-            user = User(name=name)
-            db.session.add(user)
-            db.session.commit()
-        session['user_id'] = user.id
+        try:
+            user = User.query.filter_by(name=name).first()
+            if not user:
+                user = User(name=name)
+                db.session.add(user)
+                db.session.commit()
+            session['user_id'] = user.id
+        except Exception as e:
+            print(f"Database error: {e}")
+            db.session.rollback()
+            return render_template('home.html', error='Database error. Please try again.', code=code, name=name)
         
         return redirect(url_for('room'))
     
@@ -105,9 +117,13 @@ def message(data):
     }
     
     user_id = session.get('user_id')
-    message = Message(room=room, user_id=user_id, content=data["data"])
-    db.session.add(message)
-    db.session.commit()
+    try:
+        message = Message(room=room, user_id=user_id, content=data["data"])
+        db.session.add(message)
+        db.session.commit()
+    except Exception as e:
+        print(f"Error saving message: {e}")
+        db.session.rollback()
     
     send(content, to=room)
     rooms[room]["messages"].append(content)
@@ -146,3 +162,8 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     socketio.run(app, debug=True)
+
+# Crear tablas cuando se importa el módulo (necesario para Gunicorn en Railway)
+with app.app_context():
+    db.create_all()
+    print("Database tables created successfully!")
