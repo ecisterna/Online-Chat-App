@@ -145,8 +145,6 @@ This application is production-ready and can be deployed to various platforms:
 - **Heroku** - Easy deployment with add-ons
 - **AWS/GCP/Azure** - Enterprise deployment options
 
-For detailed deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md)
-
 ## 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome!
