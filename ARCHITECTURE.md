@@ -262,7 +262,7 @@ rooms = {
 Internet
    │
    ▼
-Railway Platform
+Render Platform
    │
    ├─ Auto-scaling
    ├─ Load Balancing
@@ -282,7 +282,7 @@ PostgreSQL Database
 
 - Application logs via Python logging
 - Real-time console logs in development
-- Railway provides production logs
+- Render provides production logs
 - WebSocket connection tracking
 
 ---

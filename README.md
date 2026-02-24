@@ -141,7 +141,7 @@ Online-Chat-App/
 ## 🌐 Deployment
 
 This application is production-ready and can be deployed to various platforms:
-- **Railway** (Recommended) - Zero-config deployment with auto-scaling
+- **Render** (Recommended) - Easy deployment with free tier and WebSocket support
 - **Heroku** - Easy deployment with add-ons
 - **AWS/GCP/Azure** - Enterprise deployment options
 

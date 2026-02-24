@@ -10,7 +10,7 @@ import os
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'riverplate')
 
-# Fix para PostgreSQL URL (Railway usa postgres:// pero SQLAlchemy 1.4+ requiere postgresql://)
+# Fix para PostgreSQL URL (Render/Heroku usan postgres:// pero SQLAlchemy 1.4+ requiere postgresql://)
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///chat-app.db')
 if database_url.startswith('postgres://'):
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
@@ -163,7 +163,7 @@ if __name__ == '__main__':
         db.create_all()
     socketio.run(app, debug=True)
 
-# Crear tablas cuando se importa el módulo (necesario para Gunicorn en Railway)
+# Crear tablas cuando se importa el módulo (necesario para Gunicorn en producción)
 with app.app_context():
     db.create_all()
     print("Database tables created successfully!")

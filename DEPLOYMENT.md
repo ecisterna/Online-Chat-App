@@ -1,121 +1,102 @@
-# Guía de Despliegue en Railway
+# Guía de Despliegue en Render
 
-## 📦 Preparación Completada
-
-Tu aplicación ya está lista para desplegarse en Railway. Los siguientes archivos han sido creados/actualizados:
+## 📦 Archivos de Configuración
 
 - ✅ `Procfile` - Comando para iniciar la aplicación
-- ✅ `railway.json` - Configuración específica de Railway
 - ✅ `runtime.txt` - Versión de Python
-- ✅ `requirements.txt` - Actualizado con gunicorn y eventlet
-- ✅ `.gitignore` - Archivos a ignorar en git
+- ✅ `requirements.txt` - Dependencias con gunicorn y eventlet
 - ✅ `.env.example` - Ejemplo de variables de entorno
-- ✅ `main.py` - Actualizado para usar variables de entorno
+- ✅ `main.py` - Configurado para usar variables de entorno
 
 ## 🚀 Pasos para Desplegar
 
-### 1. Crear cuenta en Railway
-1. Ve a [railway.app](https://railway.app)
-2. Haz clic en "Start a New Project"
-3. Inicia sesión con GitHub
+### 1. Crear cuenta en Render
+1. Ve a [render.com](https://render.com)
+2. Inicia sesión con GitHub
 
-### 2. Conectar tu repositorio
-1. Asegúrate de que tu código esté en GitHub:
-   ```bash
-   git add .
-   git commit -m "Preparar para despliegue en Railway"
-   git push origin main
-   ```
-
-2. En Railway, selecciona "Deploy from GitHub repo"
-3. Selecciona el repositorio `Online-Chat-App`
+### 2. Crear un nuevo Web Service
+1. Haz clic en **"New +"** → **"Web Service"**
+2. Conecta tu repositorio `Online-Chat-App`
+3. Configura los campos:
+   - **Name**: `online-chat-app` (o el nombre que quieras)
+   - **Runtime**: `Python 3`
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:$PORT main:app`
 
 ### 3. Configurar Variables de Entorno
-En el dashboard de Railway, ve a la pestaña "Variables" y añade:
+En la sección **"Environment Variables"**, añade:
 
-```
-SECRET_KEY=genera_una_clave_secreta_aleatoria_aqui
-```
+| Key | Value |
+|-----|-------|
+| `SECRET_KEY` | tu clave secreta (ver abajo) |
+| `PYTHON_VERSION` | `3.11.0` |
 
-Para generar una clave secreta segura, ejecuta en tu terminal:
+Para generar una `SECRET_KEY` segura, ejecuta en tu terminal:
 ```bash
-python -c "import secrets; print(secrets.token_hex(32))"
+python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-### 4. Desplegar
-Railway desplegará automáticamente tu aplicación. Espera unos minutos.
+### 4. Seleccionar Plan
+- Selecciona el plan **Free** para empezar
+- Haz clic en **"Create Web Service"**
 
-### 5. Obtener la URL
-Una vez desplegado, Railway te dará una URL como: `https://tu-app.up.railway.app`
+### 5. Esperar el Despliegue
+Render instalará dependencias y desplegará tu app en ~3-5 minutos.
+En los logs deberías ver: `Database tables created successfully!` ✅
 
-## 🔧 Características Configuradas
+## 🗄️ Agregar Base de Datos PostgreSQL (Recomendado)
 
-- **Gunicorn con Eventlet**: Servidor de producción optimizado para WebSockets
-- **CORS habilitado**: Permite conexiones desde cualquier origen
-- **Variables de entorno**: Configuración segura y flexible
-- **SQLite**: Base de datos por defecto (puedes migrar a PostgreSQL después)
+Con SQLite los datos se pierden en cada redespliegue. Para persistencia usa PostgreSQL:
 
-## 📝 Comandos Útiles
-
-### Probar localmente antes de desplegar:
-```bash
-# Instalar las nuevas dependencias
-pip install -r requirements.txt
-
-# Ejecutar con gunicorn localmente
-gunicorn --worker-class eventlet -w 1 --bind 0.0.0.0:5000 main:app
-```
-
-### Ver logs en Railway:
-Los logs están disponibles en el dashboard de Railway en tiempo real.
+1. En tu dashboard de Render, haz clic en **"New +"** → **"PostgreSQL"**
+2. Configura:
+   - **Name**: `online-chat-db`
+   - **Plan**: Free
+3. Haz clic en **"Create Database"**
+4. Una vez creada, copia la **"Internal Database URL"**
+5. Ve a tu Web Service → **"Environment"** → añade:
+   - `DATABASE_URL` = (pega la URL copiada)
+6. Render redesplegará automáticamente
 
 ## 🔄 Actualizar la Aplicación
 
-Después del primer despliegue, cualquier push a la rama `main` desplegará automáticamente:
+Cualquier push a `main` redesplegará automáticamente:
 
 ```bash
 git add .
-git commit -m "Descripción de los cambios"
+git commit -m "descripción de los cambios"
 git push origin main
 ```
 
-## 💡 Próximos Pasos (Opcional)
-
-### Migrar a PostgreSQL
-Railway ofrece PostgreSQL gratis:
-1. En tu proyecto, haz clic en "+ New"
-2. Selecciona "Database" → "Add PostgreSQL"
-3. Railway automáticamente creará la variable `DATABASE_URL`
-4. Redeploy tu aplicación
-
-### Configurar dominio personalizado
-1. Ve a Settings → Domains en Railway
-2. Añade tu dominio personalizado
-
 ## ⚠️ Notas Importantes
 
-- Railway ofrece **$5 de crédito gratis al mes**
-- Después del crédito gratis, necesitarás añadir un método de pago
-- La app se suspenderá si no se usa (se reactiva automáticamente)
-- Los datos en SQLite se pueden perder en redespliegues (usa PostgreSQL en producción)
+- El plan **Free** de Render hace que la app se **duerma** tras 15 minutos de inactividad
+- Al recibir una petición después de estar dormida, tarda ~30 segundos en reactivarse
+- Los datos en **SQLite se pierden** en cada redespliegue → usa PostgreSQL para producción
+- El plan Free incluye **750 horas/mes** de uso gratuito
 
-## 🆘 Solución de Problemas
+## 🔍 Solución de Problemas
 
-### Error: "Application failed to respond"
-- Verifica que la variable `PORT` se esté usando correctamente
-- Revisa los logs en Railway
+### La app tarda en responder
+- Normal en el plan Free: la app se "duerme" por inactividad
+- Espera ~30 segundos la primera vez
+
+### Internal Server Error
+- Revisa los logs en Render → tu servicio → **"Logs"**
+- Verifica que `DATABASE_URL` esté configurada correctamente
 
 ### WebSockets no funcionan
-- Asegúrate de que `cors_allowed_origins="*"` esté en `SocketIO`
-- Verifica que eventlet esté instalado
+- Render soporta WebSockets de forma nativa ✅
+- Asegúrate de usar el comando de inicio con `eventlet`
 
-### La base de datos se resetea
-- Cambia a PostgreSQL en lugar de SQLite para persistencia
+### "No module named X"
+- Verifica que el paquete esté en `requirements.txt`
+- Fuerza un nuevo despliegue desde el dashboard
 
-## 📞 Soporte
+## 📞 Recursos
 
-Si tienes problemas, revisa:
-- [Documentación de Railway](https://docs.railway.app)
+- [Documentación de Render](https://render.com/docs)
+- [Render + Flask](https://render.com/docs/deploy-flask)
 - [Documentación de Flask-SocketIO](https://flask-socketio.readthedocs.io)
 
 ---
